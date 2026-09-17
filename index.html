@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#38d47a">
+  <meta name="description" content="CommonCents — split group costs fairly and track payment progress.">
+  <title>CommonCents</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="brand">
+        <img src="logo.svg" alt="CommonCents logo" class="brand-logo" id="brandLogo">
+        <div>
+          <strong>Common<span>Cents</span></strong>
+          <small>Because sharing should make cents.</small>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-house"></i><span>Dashboard</span></button>
+        <button class="nav-item" data-view="expenses"><i class="fa-solid fa-receipt"></i><span>Expenses</span></button>
+        <button class="nav-item" data-view="people"><i class="fa-solid fa-users"></i><span>People</span></button>
+        <button class="nav-item" data-view="history"><i class="fa-solid fa-clock-rotate-left"></i><span>Contributions</span></button>
+        <button class="nav-item" data-view="groups"><i class="fa-solid fa-layer-group"></i><span>Groups</span></button>
+        <button class="nav-item" data-view="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="mini-theme">
+          <span class="theme-dot" id="themeDot"></span>
+          <div><small>Theme</small><b id="themeName">Common Green</b></div>
+        </div>
+      </div>
+    </aside>
+
+    <header class="mobile-header">
+      <button class="icon-btn" id="mobileMenuBtn" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="mobile-brand"><img src="logo.svg" alt="CommonCents logo" id="mobileBrandLogo"><strong>Common<span>Cents</span></strong></div>
+      <button class="icon-btn" data-view="settings" aria-label="Settings"><i class="fa-solid fa-gear"></i></button>
+    </header>
+
+    <main class="main-content">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">SHARED EXPENSES</p>
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="top-actions">
+          <button class="secondary-btn" id="resetDemoBtn" type="button"><i class="fa-solid fa-rotate-left"></i><span>Clear Data</span></button>
+          <button class="primary-btn" id="addExpenseTop" type="button"><i class="fa-solid fa-plus"></i><span>Add Expense</span></button>
+        </div>
+      </div>
+
+      <section id="view-dashboard" class="view active-view">
+        <div class="group-hero glass">
+          <div>
+            <div class="hero-title-row">
+              <span class="hero-icon"><i class="fa-solid fa-users"></i></span>
+              <div>
+                <h2 id="dashboardGroupName">No group yet</h2>
+                <p id="dashboardGroupMeta">Create a group to start splitting costs.</p>
+              </div>
+            </div>
+          </div>
+          <button class="icon-btn dark" id="editGroupBtn" aria-label="Create or edit group" type="button"><i class="fa-solid fa-pen"></i></button>
+        </div>
+
+        <div class="summary-grid">
+          <article class="stat-card glass">
+            <span class="stat-icon"><i class="fa-solid fa-wallet"></i></span>
+            <div><small>Total Expenses</small><strong id="totalExpenses">₱0.00</strong></div>
+          </article>
+          <article class="stat-card glass">
+            <span class="stat-icon"><i class="fa-solid fa-circle-check"></i></span>
+            <div><small>Collected</small><strong id="totalCollected">₱0.00</strong></div>
+          </article>
+          <article class="stat-card glass">
+            <span class="stat-icon"><i class="fa-solid fa-clock"></i></span>
+            <div><small>Remaining</small><strong id="totalRemaining">₱0.00</strong></div>
+          </article>
+        </div>
+
+        <section class="progress-card glass">
+          <div class="section-heading">
+            <div><h3>Payment Progress</h3><small id="progressLabel">0% collected</small></div>
+            <strong id="progressPercent">0%</strong>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel glass">
+            <div class="section-heading">
+              <div><h3>People</h3><small>Each person's fair share</small></div>
+              <button class="text-btn" data-view="people">View All <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <div class="people-grid" id="dashboardPeople"></div>
+          </section>
+
+          <section class="panel glass">
+            <div class="section-heading">
+              <div><h3>Split Method</h3><small>Default is fair and equal</small></div>
+            </div>
+            <button class="split-method-card" id="splitMethodBtn" type="button">
+              <span class="method-icon"><i class="fa-solid fa-scale-balanced"></i></span>
+              <span><b>Equal Split</b><small>Everyone pays the same share</small></span>
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </section>
+        </div>
+
+        <section class="panel glass">
+          <div class="section-heading">
+            <div><h3>Recent Expenses</h3><small>Your group's latest costs</small></div>
+            <button class="text-btn" data-view="expenses">View All <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+          <div id="recentExpenses" class="expense-list"></div>
+        </section>
+      </section>
+
+      <section id="view-expenses" class="view">
+        <section class="panel glass">
+          <div class="section-heading">
+            <div><h2>Expenses</h2><small>All shared costs in this group</small></div>
+            <button class="primary-btn" id="addExpenseBtn" type="button"><i class="fa-solid fa-plus"></i>Add Expense</button>
+          </div>
+          <div id="allExpenses" class="expense-list"></div>
+        </section>
+      </section>
+
+      <section id="view-people" class="view">
+        <section class="panel glass">
+          <div class="section-heading">
+            <div><h2>People</h2><small>Manage members and payment status</small></div>
+            <button class="primary-btn" id="addPersonBtn" type="button"><i class="fa-solid fa-user-plus"></i>Add Person</button>
+          </div>
+          <div id="allPeople" class="people-large-grid"></div>
+        </section>
+      </section>
+
+      <section id="view-history" class="view">
+        <section class="panel glass">
+          <div class="section-heading">
+            <div><h2>Contribution History</h2><small>Every payment recorded, newest first</small></div>
+            <button class="primary-btn" id="addContributionTop" type="button"><i class="fa-solid fa-hand-holding-dollar"></i>Add Contribution</button>
+          </div>
+          <div id="contributionHistory" class="expense-list"></div>
+        </section>
+      </section>
+
+      <section id="view-groups" class="view">
+        <section class="panel glass">
+          <div class="section-heading">
+            <div><h2>Groups</h2><small>Create separate trips, events, or shared plans</small></div>
+            <button class="primary-btn" id="addGroupBtn" type="button"><i class="fa-solid fa-plus"></i>New Group</button>
+          </div>
+          <div id="groupsList" class="groups-grid"></div>
+        </section>
+      </section>
+
+      <section id="view-settings" class="view">
+        <div class="settings-grid">
+          <section class="panel glass">
+            <div class="section-heading"><div><h2>Appearance</h2><small>Customize your CommonCents palette</small></div></div>
+            <div class="setting-row color-setting">
+              <div><b>Theme Color</b><small>Choose an accent color for the interface.</small></div>
+              <div class="color-picker-wrap">
+                <input type="color" id="themeColor" value="#38d47a" aria-label="Theme color">
+                <output id="themeHex">#38D47A</output>
+              </div>
+            </div>
+            <div class="theme-preview">
+              <div class="preview-header"><span>CommonCents</span><i class="fa-solid fa-wallet"></i></div>
+              <div class="preview-total"><small>YOUR SHARE</small><strong id="previewAmount">₱2,500.00</strong></div>
+              <div class="preview-bar"><span></span></div>
+              <button type="button" class="preview-btn">Preview Button</button>
+            </div>
+          </section>
+
+          <section class="panel glass">
+            <div class="section-heading"><div><h2>Storage</h2><small>Your data stays in this browser for now.</small></div></div>
+            <div class="storage-note"><i class="fa-solid fa-hard-drive"></i><div><b>Local Storage</b><p>Groups, people, expenses, payment states, and your theme color are saved automatically on this device.</p></div></div>
+            <button class="danger-btn" id="clearDataBtn" type="button"><i class="fa-solid fa-trash"></i>Clear All Local Data</button>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header"><h2 id="modalTitle">Add Expense</h2><button class="icon-btn" id="closeModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="expenseForm">
+        <label>Expense name<input id="expenseName" required maxlength="60" placeholder="e.g. Hotel"></label>
+        <label>Amount<input id="expenseAmount" required type="number" min="0.01" step="0.01" placeholder="0.00"></label>
+        <label>Date<input id="expenseDate" required type="date"></label>
+        <div class="form-info"><i class="fa-solid fa-scale-balanced"></i><span>Default: <b>Equal / Fair Split</b> among everyone in the group.</span></div>
+        <div class="form-actions"><button class="secondary-btn" type="button" id="cancelExpense">Cancel</button><button class="primary-btn" type="submit">Save Expense</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="personModalBackdrop" hidden>
+    <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="personModalTitle">
+      <div class="modal-header"><h2 id="personModalTitle">Add Person</h2><button class="icon-btn" id="closePersonModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="personForm">
+        <label>Person's name<input id="personName" required maxlength="40" placeholder="e.g. Alex"></label>
+        <div class="form-info"><i class="fa-solid fa-users"></i><span>Their share will be calculated equally by default.</span></div>
+        <div class="form-actions"><button class="secondary-btn" type="button" id="cancelPerson">Cancel</button><button class="primary-btn" type="submit">Add Person</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="splitMethodModalBackdrop" hidden>
+    <div class="modal glass split-modal" role="dialog" aria-modal="true" aria-labelledby="splitMethodModalTitle">
+      <div class="modal-header"><h2 id="splitMethodModalTitle">Split Method</h2><button class="icon-btn" id="closeSplitMethodModal" aria-label="Close" type="button"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="split-method-options">
+        <button class="split-option" id="splitMethodEqual" type="button"><span class="method-icon"><i class="fa-solid fa-scale-balanced"></i></span><span><b>Equal / Fair</b><small>Everyone pays the same share</small></span><i class="fa-solid fa-check option-check"></i></button>
+        <button class="split-option" id="splitMethodCustom" type="button"><span class="method-icon"><i class="fa-solid fa-sliders"></i></span><span><b>Custom Split</b><small>Set each person's percentage or exact amount</small></span><i class="fa-solid fa-check option-check"></i></button>
+      </div>
+      <div id="customSplitEditor" hidden>
+        <div class="custom-split-summary"><span>Total Expense <b id="customSplitTotal">₱0.00</b></span><span>Allocated <b id="customSplitTotalAmount">₱0.00</b></span><span>Percentage <b id="customSplitTotalPercent">100%</b></span></div>
+        <div class="custom-split-head"><span>Person</span><span>Percentage</span><span>Amount</span></div>
+        <div id="customSplitRows" class="custom-split-rows"></div>
+        <div class="form-info"><i class="fa-solid fa-circle-info"></i><span>Editing one person's percentage or amount automatically redistributes the remaining share among everyone else.</span></div>
+      </div>
+      <div class="form-actions"><button class="secondary-btn" type="button" id="cancelSplitMethod">Cancel</button><button class="primary-btn" type="button" id="saveSplitMethod">Save Split Method</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="contributionModalBackdrop" hidden>
+    <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="contributionModalTitle">
+      <div class="modal-header"><h2 id="contributionModalTitle">Add Contribution</h2><button class="icon-btn" id="closeContributionModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="contributionForm">
+        <label>Person
+          <select id="contributionPerson" required></select>
+        </label>
+        <div class="form-info" id="contributionRemainingInfo"><i class="fa-solid fa-circle-info"></i><span>Remaining share: <b id="contributionRemainingAmount">₱0.00</b></span></div>
+        <label>Amount<input id="contributionAmount" required type="number" min="0.01" step="0.01" placeholder="0.00"></label>
+        <label>Date<input id="contributionDate" required type="date"></label>
+        <label>Note (optional)<input id="contributionNote" maxlength="80" placeholder="e.g. Paid after payday"></label>
+        <div class="form-actions"><button class="secondary-btn" type="button" id="cancelContribution">Cancel</button><button class="primary-btn" type="submit"><i class="fa-solid fa-hand-holding-dollar"></i>Save Contribution</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="groupModalBackdrop" hidden>
+    <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="groupModalTitle">
+      <div class="modal-header"><h2 id="groupModalTitle">New Group</h2><button class="icon-btn" id="closeGroupModal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="groupForm">
+        <label>Group name<input id="groupName" required maxlength="60" placeholder="e.g. Baguio Trip"></label>
+        <div class="form-actions"><button class="secondary-btn" type="button" id="cancelGroup">Cancel</button><button class="primary-btn" type="submit">Create Group</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>
